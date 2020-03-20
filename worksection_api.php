@@ -9,9 +9,11 @@
  *  — doHttpAuth()
  *
  *  — getCommonApi()
- *  — getEvents()
+ *  — getLastEvents()
+ *  — getProjectTasks($project_id)
  *  — getTaskCommentsHtml($project_id, $task_id)
  *  — getTaskLogs($project_id, $task_id)
+ *  — getAllTasks()
  */
 
 class worksectionHandler extends worksectionUtilities {
@@ -595,7 +597,7 @@ class worksectionCommonApi {
 
         $url = $this->generateApiUrl('/project/' . $project_id . '/' . $task_id . '/', 'get_comments');
 
-        print $url . '<br/>';
+        //print $url . '<br/>';
 
         $projectsReply = file_get_contents($url);
         $projectsReply = json_decode($projectsReply, true);
