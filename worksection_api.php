@@ -70,6 +70,24 @@ class worksectionHandler extends worksectionUtilities {
         return $this->getCommonApi()->getProjectTasks($project_id, $params);
     }
 
+    public function getTask($project_id, $task_id, $params = []){
+
+        return $this->getCommonApi()->getTask($project_id, $task_id, $params);
+
+    }
+
+    public function postTaskComment($project_id, $task_id, $email_user_from, $text, $params = []){
+
+        return $this->getCommonApi()->postTaskComment($project_id, $task_id, $email_user_from, $text, $params);
+
+    }
+
+    public function updateTaskTags($project_id, $task_id, $plus_tags, $minus_tags){
+
+        return $this->getCommonApi()->updateTaskTags($project_id, $task_id, $plus_tags, $minus_tags);
+
+    }
+
     /*
      * $task_page like «/project_id/task_id/»
      */
@@ -593,11 +611,64 @@ class worksectionCommonApi {
 
     }
 
+    public function getTask($project_id, $task_id, $params = []){
+
+        $url = $this->generateApiUrl('/project/' . $project_id . '/' . $task_id . '/', 'get_task', $params);
+
+        //print $url . '<br/>';
+
+        $projectsReply = file_get_contents($url);
+        $projectsReply = json_decode($projectsReply, true);
+
+        return $projectsReply ;
+
+    }
+
     public function getTaskComments($project_id, $task_id){
 
         $url = $this->generateApiUrl('/project/' . $project_id . '/' . $task_id . '/', 'get_comments');
 
         //print $url . '<br/>';
+
+        $projectsReply = file_get_contents($url);
+        $projectsReply = json_decode($projectsReply, true);
+
+        return $projectsReply ;
+
+    }
+
+    public function updateTaskTags($project_id, $task_id, $plus_tags, $minus_tags){
+
+        $params = [
+            'plus' => implode(',', $plus_tags),
+            'minus' => implode(',', $minus_tags),
+        ];
+
+        $url = $this->generateApiUrl('/project/' . $project_id . '/' . $task_id . '/', 'update_tags', $params);
+
+        //print $url . '<br/>';
+
+        //exit();
+
+        $projectsReply = file_get_contents($url);
+        $projectsReply = json_decode($projectsReply, true);
+
+        return $projectsReply ;
+
+    }
+
+    public function postTaskComment($project_id, $task_id, $email_user_from, $text, $params = []){
+
+        $params = array_merge([
+            'email_user_from' => $email_user_from,
+            'text' => $text,
+        ], $params);
+
+        $url = $this->generateApiUrl('/project/' . $project_id . '/' . $task_id . '/', 'post_comment', $params);
+
+        //print $url . '<br/>';
+
+        //exit();
 
         $projectsReply = file_get_contents($url);
         $projectsReply = json_decode($projectsReply, true);
