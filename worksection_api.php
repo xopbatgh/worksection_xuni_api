@@ -119,6 +119,51 @@ class worksectionHandler extends worksectionUtilities {
 
     }
 
+    /*
+     * Устанавливает label для задачи через web
+     */
+    public function taskSetResponsible($project_id, $task_id, $user_id){
+
+        $taskSetUserMdaHash = $this->getTaskMdaHash_set_user($project_id, $task_id);
+
+        $taskSetUserToLableMdaHash = $this->getTaskMdaHash_save_user_to($taskSetUserMdaHash, $project_id, $task_id);
+
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=save_user_to&mda=' . $taskSetUserToLableMdaHash . '&edit=0&is_ajax=task&id_user_to=' . $user_id . '&skip_notify=0';
+
+        $reply = $this->openUrlWithCookies($url);
+
+        if (strpos($reply, 'userto') !== false)
+            return true ;
+
+        return false;
+
+    }
+
+    /*
+     * Устанавливает label для задачи через web
+     */
+    public function saveTaskLabelsWeb($project_id, $task_id, $tag_id){
+
+        $taskLabelsMdaHash = $this->getTaskMdaHash_labels($project_id, $task_id);
+
+        $taskUpdatableLableMdaHash = $this->getTaskMdaHash_labels_save($taskLabelsMdaHash, $project_id, $task_id);
+
+        //print $taskUpdatableLableMdaHash;
+        //exit();
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=labels_save&mda=' . $taskUpdatableLableMdaHash . '&edit=0&is_ajax=task&tags%5B%5D=' . $tag_id . '&skip_notify=0';
+
+        //print $url ;
+        //exit();
+
+        $reply = $this->openUrlWithCookies($url);
+
+        if (strpos($reply, '<span class="tag') !== false)
+            return true ;
+
+        return false;
+
+    }
+
     public function getTaskCommentsHtml($project_id, $task_id){
 
         $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/';
@@ -194,6 +239,76 @@ class worksectionUtilities {
         return $mda_hash;
     }
 
+    public function getTaskMdaHash_save_user_to($taskSetUserMdaHash, $project_id, $task_id){
+
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=set_user_to&mda=' . $taskSetUserMdaHash . '&is_ajax=task&width=500&height=auto';
+
+        $reply = $this->openUrlWithCookies($url);
+
+        $mda_hash = self::extract__surrounded($reply, '?action=save_user_to&mda=', '&');
+
+        if (strlen($mda_hash) != 32){
+            print 'Unable to get getTaskMdaHash_save_user_to';
+            exit();
+        }
+
+        return $mda_hash;
+
+    }
+
+    public function getTaskMdaHash_labels_save($taskLabelsMdaHash, $project_id, $task_id){
+
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=labels&mda=' . $taskLabelsMdaHash . '&is_ajax=task&width=500&height=auto';
+
+        print $url;
+
+        $reply = $this->openUrlWithCookies($url);
+
+        $mda_hash = self::extract__surrounded($reply, '?action=labels_save&mda=', '">');
+
+        if (strlen($mda_hash) != 32){
+            print 'Unable to get getTaskUpdatableLabelsMdaHash';
+            exit();
+        }
+
+        return $mda_hash;
+
+    }
+
+    public function getTaskMdaHash_set_user($project_id, $task_id){
+
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/';
+
+        $reply = $this->openUrlWithCookies($url);
+
+        $mda_hash = self::extract__surrounded($reply, '/project/' . $project_id . '/' . $task_id . '/?action=set_user_to&mda=', '&');
+
+        if (strlen($mda_hash) != 32){
+            print 'Unable to get getTaskLabelsMdaHash';
+            exit();
+        }
+
+        return $mda_hash;
+
+    }
+
+
+    public function getTaskMdaHash_labels($project_id, $task_id){
+
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/';
+
+        $reply = $this->openUrlWithCookies($url);
+
+        $mda_hash = self::extract__surrounded($reply, '/project/' . $project_id . '/' . $task_id . '/?action=labels&mda=', '&');
+
+        if (strlen($mda_hash) != 32){
+            print 'Unable to get getTaskLabelsMdaHash';
+            exit();
+        }
+
+        return $mda_hash;
+    }
+
     public function getLogonMdaHash(){
 
         $url = 'https://' . $this->config['domain'] . '/login/';
@@ -225,8 +340,6 @@ class worksectionUtilities {
 
         if (isset($headers['Set-Cookie']))
             $this->saveCookies($headers['Set-Cookie']);
-
-        //print $headers;
 
         return $reply ;
 
