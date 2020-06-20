@@ -40,6 +40,7 @@ class worksectionHandler extends worksectionUtilities {
 
         $this->config = $config ;
 
+        $this->cookiesFilename = 'worksection_cookies' . $this->config['cookie_prefix'] . '.nfo';
         $this->cookies = $this->getCookies();
 
     }
@@ -195,7 +196,10 @@ class worksectionHandler extends worksectionUtilities {
 class worksectionUtilities {
 
 
-    public function doHttpAuth(){
+    public function doHttpAuth($config = []){
+
+        //print '?';
+        //exit();
 
         $this->config['mda'] = $this->getLogonMdaHash();
 
@@ -206,14 +210,17 @@ class worksectionUtilities {
 
         $url = 'https://' . $this->config['domain'] . '/login/';
 
-        list($headers, $reply) = self::post_query($url, [
+        $authParams = [
             'email' => $this->config['email'],
             'password' => $this->config['password'],
             'save_login' => 1,
             'action' => 'logon',
             'mda' => $this->config['mda'],
             'chk' => 'frm_chk',
-        ], [], ['withHeaders' => true]);
+        ];
+
+        list($headers, $reply) = self::post_query($url, $authParams, [], ['withHeaders' => true]);
+
 
         $headers = self::http_parse_headers($headers);
 
@@ -353,7 +360,7 @@ class worksectionUtilities {
 
     public function getCookies(){
 
-        $cookies = @json_decode(file_get_contents($this->root . 'worksection_cookies.nfo'), true);
+        $cookies = @json_decode(file_get_contents($this->root . 'worksection_cookies' . $this->config['cookie_prefix'] . '.nfo'), true);
 
         if (!is_array($cookies) OR empty($cookies))
             return [];
