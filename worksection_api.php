@@ -59,7 +59,7 @@ class worksectionHandler extends worksectionUtilities {
 
         $reply = $this->openUrlWithCookies('https://' . $this->config['domain'] . '/');
 
-        if (strpos($reply, 'ajax/?action=my_search&') !== false)
+        if (strpos($reply, 'ajax/?action=my_search&') !== false OR strpos($reply, 'Активные проекты') !== false)
             return true ;
 
         return false;
@@ -210,6 +210,11 @@ class worksectionUtilities {
 
         $url = 'https://' . $this->config['domain'] . '/login/';
 
+        //print $url;
+        //exit();
+
+        //var_dump($this->config);
+
         $authParams = [
             'email' => $this->config['email'],
             'password' => $this->config['password'],
@@ -220,6 +225,12 @@ class worksectionUtilities {
         ];
 
         list($headers, $reply) = self::post_query($url, $authParams, [], ['withHeaders' => true]);
+
+        //var_dump($reply);
+        //print '<pre>' . print_r($headers, true) . '</pre>';
+
+        //print $reply;
+        //exit();
 
 
         $headers = self::http_parse_headers($headers);
