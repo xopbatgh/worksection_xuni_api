@@ -59,7 +59,9 @@ class worksectionHandler extends worksectionUtilities {
 
         $reply = $this->openUrlWithCookies('https://' . $this->config['domain'] . '/');
 
-        if (strpos($reply, 'ajax/?action=my_search&') !== false OR strpos($reply, 'Активные проекты') !== false)
+        //print $reply;
+        //exit();
+        if (strpos($reply, '_my_search') !== false OR strpos($reply, 'Активные проекты') !== false)
             return true ;
 
         return false;
@@ -129,9 +131,11 @@ class worksectionHandler extends worksectionUtilities {
 
         $taskSetUserToLableMdaHash = $this->getTaskMdaHash_save_user_to($taskSetUserMdaHash, $project_id, $task_id);
 
-        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=save_user_to&mda=' . $taskSetUserToLableMdaHash . '&edit=0&is_ajax=task&id_user_to=' . $user_id . '&skip_notify=0';
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=task_edit_user:apply&mda=' . $taskSetUserToLableMdaHash . '&is_ajax=task&id_user_to=' . $user_id . '&skip_notify=0';
 
         $reply = $this->openUrlWithCookies($url);
+
+        print $reply;
 
         if (strpos($reply, 'userto') !== false)
             return true ;
@@ -151,7 +155,7 @@ class worksectionHandler extends worksectionUtilities {
 
         //print $taskUpdatableLableMdaHash;
         //exit();
-        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=labels_save&mda=' . $taskUpdatableLableMdaHash . '&edit=0&is_ajax=task&tags%5B%5D=' . $tag_id . '&skip_notify=0';
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=task_edit_tags:apply&mda=' . $taskUpdatableLableMdaHash . '&is_ajax=task&tags%5B%5D=' . $tag_id . '&skip_notify=0';
 
         //print $url ;
         //exit();
@@ -208,6 +212,9 @@ class worksectionUtilities {
             exit();
         }
 
+
+        //print $this->config['mda'];
+
         $url = 'https://' . $this->config['domain'] . '/login/';
 
         //print $url;
@@ -235,6 +242,9 @@ class worksectionUtilities {
 
         $headers = self::http_parse_headers($headers);
 
+        //print '<pre>' . print_r($headers, true) . '</pre>';
+        //exit();
+
         $this->saveCookies($headers['Set-Cookie']);
 
         return ;
@@ -259,11 +269,16 @@ class worksectionUtilities {
 
     public function getTaskMdaHash_save_user_to($taskSetUserMdaHash, $project_id, $task_id){
 
-        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=set_user_to&mda=' . $taskSetUserMdaHash . '&is_ajax=task&width=500&height=auto';
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=task_edit_user:show&mda=' . $taskSetUserMdaHash . '&is_ajax=task&width=500&height=auto';
+
+        //print $url;
+        //exit();
 
         $reply = $this->openUrlWithCookies($url);
 
-        $mda_hash = self::extract__surrounded($reply, '?action=save_user_to&mda=', '&');
+        //print $reply;
+
+        $mda_hash = self::extract__surrounded($reply, 'action=task_edit_user:apply&mda=', '&');
 
         if (strlen($mda_hash) != 32){
             print 'Unable to get getTaskMdaHash_save_user_to';
@@ -276,13 +291,20 @@ class worksectionUtilities {
 
     public function getTaskMdaHash_labels_save($taskLabelsMdaHash, $project_id, $task_id){
 
-        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=labels&mda=' . $taskLabelsMdaHash . '&is_ajax=task&width=500&height=auto';
+        $url = 'https://' . $this->config['domain'] . '/project/' . $project_id . '/' . $task_id . '/?action=task_edit_tags:show&mda=' . $taskLabelsMdaHash . '&is_ajax=task&width=500&height=auto';
 
-        print $url;
+        //print $url;
+
+        //exit();
 
         $reply = $this->openUrlWithCookies($url);
 
-        $mda_hash = self::extract__surrounded($reply, '?action=labels_save&mda=', '">');
+        //print $reply;
+
+        $mda_hash = self::extract__surrounded($reply, '/project/' . $project_id . '/' . $task_id . '/?action=task_edit_tags:apply&mda=', '"');
+
+
+        //$mda_hash = self::extract__surrounded($reply, '?action=labels_save&mda=', '">');
 
         if (strlen($mda_hash) != 32){
             print 'Unable to get getTaskUpdatableLabelsMdaHash';
@@ -299,10 +321,10 @@ class worksectionUtilities {
 
         $reply = $this->openUrlWithCookies($url);
 
-        $mda_hash = self::extract__surrounded($reply, '/project/' . $project_id . '/' . $task_id . '/?action=set_user_to&mda=', '&');
+        $mda_hash = self::extract__surrounded($reply, '/project/' . $project_id . '/' . $task_id . '/?action=task_edit_user:show&mda=', '&');
 
         if (strlen($mda_hash) != 32){
-            print 'Unable to get getTaskLabelsMdaHash';
+            print 'Unable to get getTaskMdaHash_set_user';
             exit();
         }
 
@@ -317,7 +339,12 @@ class worksectionUtilities {
 
         $reply = $this->openUrlWithCookies($url);
 
-        $mda_hash = self::extract__surrounded($reply, '/project/' . $project_id . '/' . $task_id . '/?action=labels&mda=', '&');
+        //print $reply;
+
+        //exit();
+
+
+        $mda_hash = self::extract__surrounded($reply, '/project/' . $project_id . '/' . $task_id . '/?action=task_edit_tags:show&mda=', '&');
 
         if (strlen($mda_hash) != 32){
             print 'Unable to get getTaskLabelsMdaHash';
@@ -353,6 +380,7 @@ class worksectionUtilities {
         if ($cookie)
             $headers_provided[] = self::getCookieHeaders();
 
+        //print '<pre>' . print_r($headers_provided, true) . '</pre>';
 
         list($headers, $reply) = self::post_query($url, [], $headers_provided, ['withHeaders' => true]);
 
@@ -469,6 +497,22 @@ class worksectionUtilities {
                 elseif (!$key)
                     $headers[0] = trim($h[0]);
             }
+        }
+
+        foreach ($headers as $key => $values){
+
+            //break ;
+
+            if (!is_array($values))
+                continue ;
+
+            $headers[$key] = implode(';', $values);
+
+            $headers[$key] = explode(';', $headers[$key]);
+
+            foreach ($headers[$key] as $subkey => $subvalue)
+                $headers[$key][$subkey] = trim($subvalue);
+
         }
 
         return $headers;
